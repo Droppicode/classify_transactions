@@ -1,5 +1,5 @@
 from http.server import HTTPServer
-from api.classifyTransactions import handler
+from api.classify import handler
 
 def run(server_class=HTTPServer, handler_class=handler, port=8002):
     server_address = ('', port)
