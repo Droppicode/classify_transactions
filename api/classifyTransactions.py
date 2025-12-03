@@ -6,7 +6,7 @@ from api._utils import send_cors_preflight, send_json_response, send_error_respo
 # Load the model outside the class to leverage caching between requests (Warm start)
 # Use an absolute path based on the current file's location
 try:
-    model_path = os.path.join(os.path.dirname(__file__), '../classify_model.pkl')
+    model_path = os.path.join(os.path.dirname(__file__), 'classify_model.pkl')
     model = joblib.load(model_path)
     print("Classification model loaded successfully.")
 except Exception as e:
