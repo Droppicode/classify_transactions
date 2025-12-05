@@ -51,7 +51,7 @@ class handler(BaseHTTPRequestHandler):
                                 'TED', 'DOC', 'EXTRATO', 'ELO', 'VISTA', 'Visa', 
                                 'QR', 'CODE', 'DINAMICO', 'DES', 'TRANSFERENCIA',
                                 'REM', 'PAGTO', 'COBRANCA', 'ESTATICO', 'ENVIADO',
-                                'PAGAMENTO', 'REALIZADA', 'PICPAY', 'CARD', 'RECEBIDO'
+                                'PAGAMENTO', 'REALIZADA', 'PICPAY', 'CARD', 'RECEBIDO',
                                 'SALDO']
             sujeira_sufixos = ['SP', 'RJ', 'BH', 'CURITIBA', 'MATRIZ', 'FILIAL', 'S.A.', 'LTDA', 'PAGAMENTOS']
             
@@ -61,9 +61,10 @@ class handler(BaseHTTPRequestHandler):
                 cleaned_desc = re.sub(r'\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?', '', cleaned_desc)
 
                 # Original cleaning
-                cleaned_desc = ' '.join(re.findall(r'\b(?!\d+\b)\w{2,}\b', cleaned_desc)).upper().strip()
-                for w in sujeira_prefixos + sujeira_sufixos:
-                    cleaned_desc = cleaned_desc.replace(w, '')
+                cleaned_desc = ' '.join(re.findall(r'\b(?!\d+\b)\w{3,}\b', cleaned_desc)).upper().strip()
+                all_sujeira = sujeira_prefixos + sujeira_sufixos
+                pattern = r'\b(' + '|'.join(all_sujeira) + r')\b'
+                cleaned_desc = re.sub(pattern, '', cleaned_desc)
                 
                 cleaned_descriptions.append(re.sub(r'\s+', ' ', cleaned_desc).strip())
 

@@ -25,7 +25,7 @@ def train_and_save_model():
                         'TED', 'DOC', 'EXTRATO', 'ELO', 'VISTA', 'Visa', 
                         'QR', 'CODE', 'DINAMICO', 'DES', 'TRANSFERENCIA',
                         'REM', 'PAGTO', 'COBRANCA', 'ESTATICO', 'ENVIADO',
-                        'PAGAMENTO', 'REALIZADA', 'PICPAY', 'CARD', 'RECEBIDO'
+                        'PAGAMENTO', 'REALIZADA', 'PICPAY', 'CARD', 'RECEBIDO',
                         'SALDO']
     sujeira_sufixos = ['SP', 'RJ', 'BH', 'CURITIBA', 'MATRIZ', 'FILIAL', 'S.A.', 'LTDA', 'PAGAMENTOS']
 
@@ -65,9 +65,10 @@ def train_and_save_model():
     # Limpa descrições
     df['Descricao'] = df['Descricao'].apply(remove_accents)
     df['Descricao'] = df['Descricao'].str.replace(r'\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?', '', regex=True)
-    df['Descricao'] = df['Descricao'].str.findall(r'\b(?!\d+\b)\w{2,}\b').str.join(' ').str.upper().str.strip()
-    for w in sujeira_prefixos + sujeira_sufixos:
-        df['Descricao'] = df['Descricao'].str.replace(w, '')
+    df['Descricao'] = df['Descricao'].str.findall(r'\b(?!\d+\b)\w{3,}\b').str.join(' ').str.upper().str.strip()
+    all_sujeira = sujeira_prefixos + sujeira_sufixos
+    pattern = r'\b(' + '|'.join(all_sujeira) + r')\b'
+    df['Descricao'] = df['Descricao'].str.replace(pattern, '', regex=True)
     df['Descricao'] = df['Descricao'].str.replace(r'\s+', ' ', regex=True).str.strip()
 
     df['Categoria'] = df['Categoria'].str.upper().str.strip()
