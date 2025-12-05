@@ -24,7 +24,9 @@ def train_and_save_model():
     sujeira_prefixos = ['COMPRA', 'PGTO', 'DEBITO', 'CREDITO', 'PIX', 
                         'TED', 'DOC', 'EXTRATO', 'ELO', 'VISTA', 'Visa', 
                         'QR', 'CODE', 'DINAMICO', 'DES', 'TRANSFERENCIA',
-                        'REM', 'PAGTO', 'COBRANCA', 'ESTATICO']
+                        'REM', 'PAGTO', 'COBRANCA', 'ESTATICO', 'ENVIADO',
+                        'PAGAMENTO', 'REALIZADA', 'PICPAY', 'CARD', 'RECEBIDO'
+                        'SALDO']
     sujeira_sufixos = ['SP', 'RJ', 'BH', 'CURITIBA', 'MATRIZ', 'FILIAL', 'S.A.', 'LTDA', 'PAGAMENTOS']
 
     def gerar_dataset(qtd_linhas=5000):
