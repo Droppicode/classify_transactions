@@ -3,9 +3,15 @@ import numpy as np
 import random
 import json
 import joblib
+import unicodedata
+import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import make_pipeline
+
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 def train_and_save_model():
     # Abre base de dados
@@ -15,7 +21,10 @@ def train_and_save_model():
     categorias = list(base_dados.keys())
 
     # Sujeira para as transacoes
-    sujeira_prefixos = ['COMPRA', 'PGTO', 'DEBITO', 'CREDITO', 'PIX', 'TED', 'DOC', 'EXTRATO', 'COMPRA ELO', 'COMPRA VISA', 'ELO', 'VISTA']
+    sujeira_prefixos = ['COMPRA', 'PGTO', 'DEBITO', 'CREDITO', 'PIX', 
+                        'TED', 'DOC', 'EXTRATO', 'ELO', 'VISTA', 'Visa', 
+                        'QR', 'CODE', 'DINAMICO', 'DES', 'TRANSFERENCIA',
+                        'REM', 'PAGTO', 'COBRANCA']
     sujeira_sufixos = ['SP', 'RJ', 'BH', 'CURITIBA', 'MATRIZ', 'FILIAL', 'S.A.', 'LTDA', 'PAGAMENTOS']
 
     def gerar_dataset(qtd_linhas=5000):
@@ -41,6 +50,8 @@ def train_and_save_model():
     df = gerar_dataset(10000)
 
     # Limpa descrições
+    df['Descricao'] = df['Descricao'].apply(remove_accents)
+    df['Descricao'] = df['Descricao'].str.replace(r'\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?', '', regex=True)
     df['Descricao'] = df['Descricao'].str.findall(r'\b(?!\d+\b)\w{2,}\b').str.join(' ').str.upper().str.strip()
     for w in sujeira_prefixos + sujeira_sufixos:
         df['Descricao'] = df['Descricao'].str.replace(w, '')

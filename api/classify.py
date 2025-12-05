@@ -2,7 +2,12 @@ from http.server import BaseHTTPRequestHandler
 import joblib
 import os
 import re
+import unicodedata
 from api._utils import send_cors_preflight, send_json_response, send_error_response, get_request_body
+
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 # Load the model outside the class to leverage caching between requests (Warm start)
 # Use an absolute path based on the current file's location
@@ -42,11 +47,19 @@ class handler(BaseHTTPRequestHandler):
 
             # 2. Limpa descrições
             cleaned_descriptions = []
-            sujeira_prefixos = ['COMPRA', 'PGTO', 'DEBITO', 'CREDITO', 'PIX', 'TED', 'DOC', 'EXTRATO', 'COMPRA ELO', 'COMPRA VISA', 'ELO', 'VISTA']
+            sujeira_prefixos = ['COMPRA', 'PGTO', 'DEBITO', 'CREDITO', 'PIX', 
+                                'TED', 'DOC', 'EXTRATO', 'ELO', 'VISTA', 'Visa', 
+                                'QR', 'CODE', 'DINAMICO', 'DES', 'TRANSFERENCIA',
+                                'REM', 'PAGTO', 'COBRANCA']
             sujeira_sufixos = ['SP', 'RJ', 'BH', 'CURITIBA', 'MATRIZ', 'FILIAL', 'S.A.', 'LTDA', 'PAGAMENTOS']
             
             for desc in descriptions:
-                cleaned_desc = ' '.join(re.findall(r'\b(?!\d+\b)\w{2,}\b', desc)).upper().strip()
+                # Remove accents and dates first
+                cleaned_desc = remove_accents(desc)
+                cleaned_desc = re.sub(r'\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?', '', cleaned_desc)
+
+                # Original cleaning
+                cleaned_desc = ' '.join(re.findall(r'\b(?!\d+\b)\w{2,}\b', cleaned_desc)).upper().strip()
                 for w in sujeira_prefixos + sujeira_sufixos:
                     cleaned_desc = cleaned_desc.replace(w, '')
                 
