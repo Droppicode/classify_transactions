@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import joblib
 import os
+import re
 from api._utils import send_cors_preflight, send_json_response, send_error_response, get_request_body
 
 # Load the model outside the class to leverage caching between requests (Warm start)
@@ -27,46 +28,69 @@ class handler(BaseHTTPRequestHandler):
             # 1. Read and parse the request body
             data = get_request_body(self)
             descriptions = data.get('descriptions')
-            single_description = data.get('description')
 
-            if descriptions:
-                print(f"Classifying descriptions: {descriptions}")
-                to_classify = descriptions
-            elif single_description:
-                print(f"Classifying description: '{single_description}'")
-                to_classify = [single_description]
-            else:
+            if not descriptions:
                 send_json_response(
                     self,
-                    {'error': "The function must be called with 'descriptions' (a list of strings) or 'description' (a single string)."},
+                    {'error': "The function must be called with 'descriptions' (a list of strings)."},
                     status_code=400,
                     methods='POST, OPTIONS'
                 )
                 return
-
-            # 2. Make the predictions
-            predictions = model.predict(to_classify)
             
-            # Try to get confidence scores
-            try:
-                probas = model.predict_proba(to_classify).max(axis=1)
-            except AttributeError:
-                probas = [1.0] * len(to_classify)
+            print(f"Classifying descriptions: {descriptions}")
 
-            # 3. Prepare the response data
-            results = []
-            for i, description in enumerate(to_classify):
-                results.append({
-                    "description": description,
-                    "category": predictions[i],
-                    "confidence": float(probas[i])
-                })
+            # 2. Limpa descrições
+            cleaned_descriptions = []
+            sujeira_prefixos = ['COMPRA', 'PGTO', 'DEBITO', 'CREDITO', 'PIX', 'TED', 'DOC', 'EXTRATO', 'COMPRA ELO', 'COMPRA VISA', 'ELO', 'VISTA']
+            sujeira_sufixos = ['SP', 'RJ', 'BH', 'CURITIBA', 'MATRIZ', 'FILIAL', 'S.A.', 'LTDA', 'PAGAMENTOS']
+            
+            for desc in descriptions:
+                cleaned_desc = ' '.join(re.findall(r'\b(?!\d+\b)\w{2,}\b', desc)).upper().strip()
+                for w in sujeira_prefixos + sujeira_sufixos:
+                    cleaned_desc = cleaned_desc.replace(w, '')
+                
+                cleaned_descriptions.append(re.sub(r'\s+', ' ', cleaned_desc).strip())
+
+            print(f"Cleaned descriptions for classification: {cleaned_descriptions}")
+
+            # 3. Separa as descrições que serão classificadas e as que serão "OUTROS"
+            to_classify = []
+            to_classify_indices = []
+            results = [None] * len(descriptions)
+
+            for i, cleaned_desc in enumerate(cleaned_descriptions):
+                if cleaned_desc:
+                    to_classify.append(cleaned_desc)
+                    to_classify_indices.append(i)
+                else:
+                    results[i] = {
+                        "description": descriptions[i],
+                        "category": "OUTROS",
+                        "confidence": 1.0
+                    }
+
+            # 4. Make predictions
+            if to_classify:
+                predictions = model.predict(to_classify)
+                try:
+                    probas = model.predict_proba(to_classify).max(axis=1)
+                except AttributeError:
+                    probas = [1.0] * len(to_classify)
+
+                # 5. Prepara os dados de resposta
+                for i, pred_index in enumerate(to_classify_indices):
+                    results[pred_index] = {
+                        "description": descriptions[pred_index],
+                        "category": predictions[i],
+                        "confidence": float(probas[i])
+                    }
             
             response_data = {"results": results}
             
             print(f"Prediction successful: {response_data}")
 
-            # 4. Send the response back to the client
+            # 6. Send the response back to the client
             send_json_response(self, {'data': response_data}, methods='POST, OPTIONS')
 
         except Exception as error:

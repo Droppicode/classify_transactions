@@ -41,10 +41,10 @@ def train_and_save_model():
     df = gerar_dataset(10000)
 
     # Limpa descrições
-    df = df[~df['Descricao'].str.contains(r'\bPIX\b', regex=True)]
     df['Descricao'] = df['Descricao'].str.findall(r'\b(?!\d+\b)\w{2,}\b').str.join(' ').str.upper().str.strip()
     for w in sujeira_prefixos + sujeira_sufixos:
         df['Descricao'] = df['Descricao'].str.replace(w, '')
+    df['Descricao'] = df['Descricao'].str.replace(r'\s+', ' ', regex=True).str.strip()
 
     df['Categoria'] = df['Categoria'].str.upper().str.strip()
 
