@@ -50,7 +50,7 @@ class handler(BaseHTTPRequestHandler):
             sujeira_prefixos = ['COMPRA', 'PGTO', 'DEBITO', 'CREDITO', 'PIX', 
                                 'TED', 'DOC', 'EXTRATO', 'ELO', 'VISTA', 'Visa', 
                                 'QR', 'CODE', 'DINAMICO', 'DES', 'TRANSFERENCIA',
-                                'REM', 'PAGTO', 'COBRANCA']
+                                'REM', 'PAGTO', 'COBRANCA', 'ESTATICO']
             sujeira_sufixos = ['SP', 'RJ', 'BH', 'CURITIBA', 'MATRIZ', 'FILIAL', 'S.A.', 'LTDA', 'PAGAMENTOS']
             
             for desc in descriptions:

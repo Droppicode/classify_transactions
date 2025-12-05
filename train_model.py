@@ -24,25 +24,36 @@ def train_and_save_model():
     sujeira_prefixos = ['COMPRA', 'PGTO', 'DEBITO', 'CREDITO', 'PIX', 
                         'TED', 'DOC', 'EXTRATO', 'ELO', 'VISTA', 'Visa', 
                         'QR', 'CODE', 'DINAMICO', 'DES', 'TRANSFERENCIA',
-                        'REM', 'PAGTO', 'COBRANCA']
+                        'REM', 'PAGTO', 'COBRANCA', 'ESTATICO']
     sujeira_sufixos = ['SP', 'RJ', 'BH', 'CURITIBA', 'MATRIZ', 'FILIAL', 'S.A.', 'LTDA', 'PAGAMENTOS']
 
     def gerar_dataset(qtd_linhas=5000):
         transacoes = []
-
-        for _ in range(qtd_linhas):
-            # Escolhe uma loja aleatória
-            cat = random.choice(categorias)
-            loja = random.choice(base_dados[cat])
-
-            # Gera a descrição suja
+        
+        def gerar_transacao_suja(loja, cat):
             desc = loja
             if random.random() < 0.6: desc = f"{random.choice(sujeira_prefixos)} {desc}"
             if random.random() < 0.4: desc = f"{desc} {random.choice(sujeira_sufixos)}"
             if random.random() < 0.3: desc = f"{desc} {random.randint(10, 9999)}"
+            return [desc, cat]
 
-            transacoes.append([desc, cat])
+        # 1. Garante que cada item de cada categoria esteja presente pelo menos uma vez
+        for cat in categorias:
+            for loja in base_dados[cat]:
+                transacoes.append(gerar_transacao_suja(loja, cat))
 
+        # 2. Equilibra as categorias com as linhas restantes
+        linhas_restantes = qtd_linhas - len(transacoes)
+        if linhas_restantes > 0:
+            linhas_por_cat = linhas_restantes // len(categorias)
+            for cat in categorias:
+                for _ in range(linhas_por_cat):
+                    loja = random.choice(base_dados[cat])
+                    transacoes.append(gerar_transacao_suja(loja, cat))
+        
+        # Embaralha o dataset final
+        random.shuffle(transacoes)
+        
         return pd.DataFrame(transacoes, columns=['Descricao', 'Categoria'])
 
     # Executa e salva
