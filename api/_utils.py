@@ -28,8 +28,7 @@ def send_text_response(handler, text, status_code=200, methods='GET, POST, OPTIO
 def send_error_response(handler, error, status_code=500, methods='GET, POST, OPTIONS'):
     """Send an error response"""
     error_data = {
-        'error': str(error),
-        'details': str(error.__cause__) if error.__cause__ else None
+        'error': 'An internal server error occurred.'
     }
     send_json_response(handler, error_data, status_code, methods)
 

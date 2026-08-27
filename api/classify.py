@@ -34,7 +34,7 @@ class handler(BaseHTTPRequestHandler):
             data = get_request_body(self)
             descriptions = data.get('descriptions')
 
-            if not descriptions:
+            if not descriptions or not isinstance(descriptions, list):
                 send_json_response(
                     self,
                     {'error': "The function must be called with 'descriptions' (a list of strings)."},
@@ -42,6 +42,34 @@ class handler(BaseHTTPRequestHandler):
                     methods='POST, OPTIONS'
                 )
                 return
+                
+            if len(descriptions) > 100:
+                send_json_response(
+                    self,
+                    {'error': "Maximum of 100 descriptions allowed per request."},
+                    status_code=400,
+                    methods='POST, OPTIONS'
+                )
+                return
+                
+            # Validar tipos e tamanhos dos itens
+            for d in descriptions:
+                if not isinstance(d, str):
+                    send_json_response(
+                        self,
+                        {'error': "All items in 'descriptions' must be strings."},
+                        status_code=400,
+                        methods='POST, OPTIONS'
+                    )
+                    return
+                if len(d) > 200:
+                    send_json_response(
+                        self,
+                        {'error': "Description length cannot exceed 200 characters."},
+                        status_code=400,
+                        methods='POST, OPTIONS'
+                    )
+                    return
             
             print(f"Classifying descriptions: {descriptions}")
 
