@@ -12,7 +12,43 @@ This repository contains the Machine Learning logic and data science workflows u
 ## ✨ Overview
 The model takes raw bank statement strings (extracted via OCR) and classifies them into structured financial categories (e.g., Food, Transport, Housing) using NLP techniques and classification algorithms.
 
-## 🚀 How to Explore
-1. Clone the repository.
-2. Install dependencies: `pip install -r requirements.txt`
-3. Open `classify_transactions.ipynb` to view the data exploration, training, and evaluation pipeline.
+## 📂 Project Structure
+```text
+Classify/
+├── api/                  # Serverless function handlers (Vercel)
+│   ├── classify.py       # Main inference endpoint
+│   ├── _utils.py         # Utility functions for the API
+│   └── classify_model.pkl# Serialized Machine Learning model
+├── data/                 # Raw data and test files (ignored in git)
+├── notebooks/            # Jupyter notebooks for data exploration
+├── scripts/              # MLOps and utility scripts
+│   └── train_model.py    # Script to retrain the ML model
+├── README.md             
+└── requirements.txt      
+```
+
+## 🚀 How to Explore & Run
+
+### 1. Setup Environment
+```bash
+git clone https://github.com/your-username/classify_transactions.git
+cd classify_transactions
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. MLOps (Retraining the Model)
+To generate new data and retrain the Random Forest model:
+```bash
+python scripts/train_model.py
+```
+This will automatically save the new model to `api/classify_model.pkl`.
+
+### 3. API Deployment (Vercel)
+This project is built using Python's `http.server.BaseHTTPRequestHandler` to be easily deployed as Serverless Functions on Vercel. 
+To test the API locally, run the test server:
+```bash
+python -m api._test
+```
+You can then send POST requests with transaction descriptions to classify them.

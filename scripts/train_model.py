@@ -15,7 +15,7 @@ def remove_accents(input_str):
 
 def train_and_save_model():
     # Abre base de dados
-    with open("base_dados.json", "r") as json_file:
+    with open("../data/base_dados.json", "r") as json_file:
         base_dados = json.load(json_file)
 
     categorias = list(base_dados.keys())
@@ -86,8 +86,8 @@ def train_and_save_model():
     print("Treino concluído!")
 
     # Salva o modelo
-    joblib.dump(model, 'api/classify_model.pkl')
-    print("Modelo salvo em api/classify_model.pkl")
+    joblib.dump(model, '../api/classify_model.pkl')
+    print("Modelo salvo em ../api/classify_model.pkl")
 
 if __name__ == '__main__':
     train_and_save_model()
